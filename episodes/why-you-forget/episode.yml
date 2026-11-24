@@ -1,6 +1,6 @@
 slug: why-you-forget
-# draft: demo/fixture. Narasinya ~2 menit, jadi gate 4 menit hanya memberi warning.
-status: draft
+# ready: narasi id ~5 menit, en ~4 menit, jadi gate 4-15 menit berlaku keras.
+status: ready
 
 title:
   id: "Kenapa kamu lupa hal yang baru kamu pelajari"
@@ -93,77 +93,180 @@ scenes:
   - id: s1
     purpose: hook
     script:
-      id: "Kamu belajar tiga jam semalam. Pagi ini, setengahnya sudah hilang. Dan hampir semua orang menyimpulkan hal yang salah tentang itu."
-      en: "You studied for three hours last night. This morning, half of it is gone. And almost everyone draws the wrong conclusion about why."
+      id: "Kamu belajar tiga jam semalam. Pagi ini, setengahnya sudah hilang. Lalu kamu menyimpulkan salah satu dari dua hal: ingatanmu buruk, atau materinya terlalu sulit. Dua-duanya bukan penjelasan yang berguna. Yang sebenarnya terjadi jauh lebih bisa diatur daripada bakat, dan semuanya ditentukan oleh apa yang kamu lakukan setelah belajar."
+      en: "You studied for three hours last night. This morning, half of it is gone. Then you conclude one of two things: your memory is bad, or the material is too hard. Neither is a useful explanation. What actually happened is far more controllable than talent, and all of it comes down to what you do after you study."
     on_screen:
       id: "Setengahnya hilang dalam semalam"
       en: "Half of it is gone by morning"
+    points:
+      id:
+        - "3 jam belajar, hilang separuh dalam semalam"
+        - "Bukan bakat, bukan tingkat kesulitan"
+        - "Ditentukan oleh apa yang kamu lakukan setelahnya"
+      en:
+        - "3 hours of study, half gone overnight"
+        - "Not talent, not difficulty"
+        - "Decided by what you do afterwards"
     claim_ids: []
     asset_ids: []
 
   - id: s2
     purpose: context
     script:
-      id: "Ingatan bukan rekaman. Otak menyimpan jejak, bukan file. Jejak itu melemah kalau tidak pernah dipanggil, dan cara kamu memanggilnya menentukan seberapa kuat ia bertahan."
-      en: "Memory is not a recording. The brain stores traces, not files. A trace weakens when it is never retrieved, and how you retrieve it decides how long it survives."
+      id: "Mulai dari apa yang sebenarnya disimpan otak. Ingatan bukan rekaman. Tidak ada file yang bisa diputar ulang dengan setia. Yang ada adalah jejak: pola koneksi yang dibentuk saat kamu belajar, dan setelah itu melemah kalau tidak pernah dipanggil. Ini bukan kerusakan, ini penghematan. Otak membuang jalur yang tidak pernah dipakai, karena menyimpan semuanya sama mahalnya dengan tidak menyimpan apa pun. Dan bagian yang menentukan: cara kamu memanggil jejak itu mengubah seberapa lama ia bertahan. Membaca ulang terasa seperti memanggil, padahal kamu hanya melihat jawabannya."
+      en: "Start with what the brain actually stores. Memory is not a recording. There is no file that plays back faithfully. There are traces: patterns of connection built while you study, which weaken when they are never retrieved. That is not damage, it is housekeeping. The brain drops routes it never uses, because keeping everything costs as much as keeping nothing. And the part that decides the outcome: how you retrieve a trace changes how long it survives. Rereading feels like retrieval, but you are only looking at the answer."
     on_screen:
       id: "Ingatan = jejak, bukan file"
       en: "Memory = traces, not files"
+    points:
+      id:
+        - "Bukan rekaman, tapi jejak koneksi"
+        - "Jejak melemah kalau tidak dipanggil"
+        - "Cara memanggil menentukan daya tahannya"
+      en:
+        - "Not a recording, a pattern of connections"
+        - "Unused traces decay"
+        - "How you retrieve sets how long it lasts"
     claim_ids: []
     asset_ids: []
 
   - id: s3
     purpose: evidence
     script:
-      id: "Ebbinghaus pada 1885 mengukur dirinya sendiri dan menemukan penurunan paling tajam terjadi di jam-jam pertama, bukan perlahan sepanjang minggu. Replikasi modern tahun 2015 menemukan pola serupa, hanya lebih lambat dan sangat berbeda antar orang. Artinya: yang kamu alami pagi ini normal, dan bentuk kurvanya bisa diubah."
-      en: "In 1885 Ebbinghaus measured himself and found the sharpest drop happens in the first hours, not gradually over a week. A 2015 replication found the same shape, just slower and far more variable between people. So what you felt this morning is normal, and the shape of that curve is changeable."
+      id: "Pada 1885, Ebbinghaus menghafal daftar suku kata tanpa arti, lalu menguji dirinya sendiri pada interval yang berbeda-beda. Hasilnya bukan garis lurus. Penurunan paling tajam terjadi di jam-jam pertama, lalu kurvanya mendatar. Murre dan Dros mengulang percobaan itu pada 2015 dengan data yang jauh lebih banyak, dan menemukan bentuk yang sama: tajam di awal, melambat kemudian. Bedanya, penurunannya lebih lambat dari klaim Ebbinghaus, dan sangat berbeda antar orang. Ada yang kehilangan setengah dalam hitungan jam, ada yang baru dalam beberapa hari. Jadi angka di layar itu bukan takdirmu. Yang penting adalah bentuk kurvanya, dan bentuk itu bisa diubah."
+      en: "In 1885, Ebbinghaus memorised lists of nonsense syllables, then tested himself at different intervals. The result was not a straight line. The sharpest drop happened in the first hours, then the curve flattened out. Murre and Dros reran that experiment in 2015 with far more data and found the same shape: steep first, slow later. The difference is that their decline was slower than Ebbinghaus claimed, and it varied enormously between people. Some lose half within hours, some only after days. So the number on screen is not your fate. What matters is the shape of the curve, and that shape is changeable."
     on_screen:
       id: "Kurva lupa: tajam di awal"
       en: "The forgetting curve: steepest first"
+    points:
+      id:
+        - "Ebbinghaus 1885: tajam di jam pertama, lalu mendatar"
+        - "Murre & Dros 2015: bentuk sama, lebih lambat"
+        - "Variasinya besar antar orang"
+      en:
+        - "Ebbinghaus 1885: steepest in the first hours"
+        - "Murre & Dros 2015: same shape, slower decline"
+        - "Huge variation between people"
     claim_ids: [c1, c2]
     asset_ids: [a1]
 
   - id: s4
     purpose: explain
     script:
-      id: "Di tahun 2006, Roediger dan Karpicke membandingkan dua kelompok. Kelompok pertama membaca ulang materi. Kelompok kedua menutup buku dan menuliskan apa yang mereka ingat. Saat diuji seminggu kemudian, kelompok yang menguji diri mengingat jauh lebih banyak. Yang menarik: kelompok pembaca ulang merasa lebih yakin akan hasilnya. Rasa yakin itu bukan retensi."
-      en: "In 2006, Roediger and Karpicke compared two groups. One reread the material. The other closed the book and wrote down what they remembered. Tested a week later, the self-testing group remembered substantially more. The interesting part: the rereaders felt more confident about their result. That confidence is not retention."
+      id: "Cara mengubah bentuk kurva itu ditemukan pada 2006 oleh Roediger dan Karpicke. Mereka membagi mahasiswa menjadi dua kelompok. Kelompok pertama membaca ulang teks sampai beberapa kali. Kelompok kedua membaca sekali, lalu menutup teks dan menuliskan semua yang bisa mereka ingat. Setelah itu semua diuji. Seminggu kemudian, kelompok yang menguji diri mengingat jauh lebih banyak, walaupun total waktu belajarnya sama. Dan bagian yang paling sering dilewatkan: kelompok pembaca ulang merasa lebih yakin akan hasilnya. Rasa yakin itu bukan retensi. Rasa yakin itu justru sinyal bahwa kamu belum menguji apa pun."
+      en: "The way to change that curve was found in 2006 by Roediger and Karpicke. They split students into two groups. The first reread the text several times. The second read it once, then closed it and wrote down everything they could recall. Then everyone was tested. A week later, the self-testing group remembered substantially more, with the same total study time. And the part most people miss: the rereaders felt more confident about their results. That confidence is not retention. It is the signal that you have not tested anything yet."
     on_screen:
       id: "Baca ulang vs uji diri"
       en: "Rereading vs self-testing"
+    points:
+      id:
+        - "Baca ulang 4x vs baca 1x lalu tulis dari ingatan"
+        - "Seminggu kemudian: yang menguji diri menang"
+        - "Pembaca ulang lebih yakin, tapi salah"
+      en:
+        - "Reread 4x vs read once, then recall in writing"
+        - "A week later: the self-testers retained more"
+        - "Rereaders felt more confident, and were wrong"
     claim_ids: [c3]
     asset_ids: [a2]
 
   - id: s5
     purpose: explain
     script:
-      id: "Faktor kedua adalah jeda. Meta-analisis dari 2006 atas ratusan eksperimen menemukan bahwa menyebar sesi belajar dalam beberapa hari mengalahkan menumpuk semuanya dalam satu malam. Bukan karena belajarnya lebih lama, tapi karena setiap kali kamu memanggil kembali setelah agak lupa, jejaknya diperkuat."
-      en: "The second factor is the gap. A 2006 meta-analysis across hundreds of experiments found that spreading sessions over several days beats cramming them into one night. Not because you study longer, but because each retrieval after partial forgetting strengthens the trace."
+      id: "Faktor kedua adalah jeda. Cepeda dan rekan-rekannya menggabungkan ratusan eksperimen pada 2006 dan menemukan pola yang konsisten: menyebar sesi belajar dalam beberapa hari mengalahkan menumpuk semuanya dalam satu malam, untuk jumlah menit yang persis sama. Mekanismenya sederhana dan sering disalahpahami. Kalau kamu memanggil kembali materi setelah agak lupa, usaha yang dibutuhkan lebih besar, dan usaha itulah yang memperkuat jejaknya. Kalau materinya masih segar, memanggilnya hampir gratis, dan hampir tidak mengubah apa pun. Jadi jeda bukan waktu istirahat dari belajar. Jeda itu bagian dari belajarnya."
+      en: "The second factor is the gap. Cepeda and colleagues pooled hundreds of experiments in 2006 and found a consistent pattern: spreading study sessions over several days beats cramming them into one night, for exactly the same number of minutes. The mechanism is simple and widely misunderstood. When you retrieve material after partly forgetting it, the effort is larger, and that effort is what strengthens the trace. When the material is still fresh, retrieval is almost free, so it changes almost nothing. The gap is not a break from studying. The gap is part of the studying."
     on_screen:
       id: "Jeda mengalahkan tumpukan"
       en: "Spacing beats cramming"
+    points:
+      id:
+        - "Menit sama, hasil beda: sebar vs tumpuk"
+        - "Memanggil setelah agak lupa = usaha lebih besar"
+        - "Usaha itulah yang memperkuat jejak"
+      en:
+        - "Same minutes, different result: spread vs mass"
+        - "Retrieving after partial forgetting costs effort"
+        - "That effort is what strengthens the trace"
     claim_ids: [c4]
     asset_ids: [a3]
 
   - id: s6
     purpose: counterpoint
     script:
-      id: "Jadi kenapa semua orang masih membaca ulang? Karena menstabilo dan membaca ulang terasa enak. Materinya terasa familiar, dan familiaritas terasa seperti pemahaman. Tapi familiaritas hanya membuktikan kamu pernah melihatnya, bukan bahwa kamu bisa memproduksinya saat diminta."
-      en: "So why does everyone still reread? Because highlighting and rereading feel good. The material feels familiar, and familiarity feels like understanding. But familiarity only proves you have seen it, not that you can produce it when asked."
+      id: "Jadi kalau buktinya sudah jelas sejak 2006, kenapa semua orang masih membaca ulang? Karena menstabilo dan membaca ulang terasa enak. Materinya terasa lancar, dan kelancaran terasa seperti pemahaman. Psikolog menyebutnya ilusi kelancaran: kamu menilai keberhasilan belajar dari rasa mudah saat itu, bukan dari kemampuan menjawab besok. Dan penilaian itu salah secara sistematis, bukan acak. Ujian tidak peduli seberapa lancar halaman itu terasa saat kamu membacanya. Ujian menanyakan satu hal saja: bisakah kamu memproduksi jawabannya tanpa melihat."
+      en: "So if the evidence has been clear since 2006, why does everyone still reread? Because highlighting and rereading feel good. The material feels smooth, and smoothness feels like understanding. Psychologists call it the fluency illusion: you judge learning by how easy it feels right now, not by whether you can answer tomorrow. And that judgement is wrong systematically, not randomly. An exam does not care how smooth the page felt while you read it. It asks one thing: can you produce the answer without looking."
     on_screen:
       id: "Familiar bukan berarti bisa"
       en: "Familiar is not recallable"
+    points:
+      id:
+        - "Ilusi kelancaran: mudah dibaca bukan berarti tersimpan"
+        - "Kamu menilai rasa saat itu, bukan kemampuan besok"
+        - "Ujian menanyakan produksi, bukan pengenalan"
+      en:
+        - "Fluency illusion: easy to read is not stored"
+        - "You judge the feeling now, not recall tomorrow"
+        - "An exam tests production, not recognition"
     claim_ids: [c3]
     asset_ids: []
 
   - id: s7
+    purpose: explain
+    script:
+      id: "Sekarang bagian yang bisa langsung dipakai, tanpa aplikasi apa pun. Setelah membaca satu bagian, tutup catatanmu. Tulis lima hal yang kamu ingat, dalam kalimatmu sendiri, bukan menyalin kalimat di buku. Lalu buka catatan dan tandai yang salah atau yang terlewat. Yang terlewat itu daftar belajar yang sebenarnya, bukan yang kamu rencanakan. Besok, ulangi tanpa melihat. Tiga hari kemudian, ulangi lagi, dan hanya uji yang masih salah. Total tambahan waktunya sekitar sepuluh menit per sesi, dan itu menggantikan jam membaca ulang, bukan menambahnya."
+      en: "Now the part you can use tonight, without any app. After you read one section, close your notes. Write five things you remember, in your own sentences, not copied from the page. Then open the notes and mark what was wrong or missing. What was missing is your real study list, not the one you planned. Tomorrow, repeat it without looking. Three days later, repeat again, and only test what is still wrong. The extra time is about ten minutes per session, and it replaces rereading hours, it does not add to them."
+    on_screen:
+      id: "Protokol: tutup, tulis, cek"
+      en: "Protocol: close, write, check"
+    points:
+      id:
+        - "Tutup catatan, tulis 5 hal dari ingatan"
+        - "Yang terlewat = daftar belajar sebenarnya"
+        - "Ulangi besok dan tiga hari lagi"
+      en:
+        - "Close notes, write 5 things from memory"
+        - "What you missed is the real study list"
+        - "Repeat tomorrow, then in three days"
+    claim_ids: []
+    asset_ids: []
+
+  - id: s8
+    purpose: explain
+    script:
+      id: "Contoh konkret, misalnya ujianmu tanggal dua puluh. Hari ini: baca satu bab, tutup, tulis lima poin. Besok: uji lima poin itu, lalu tambah lima poin baru dari bagian berikutnya. Tiga hari kemudian: uji semuanya, dan habiskan waktumu hanya pada yang salah. Seminggu sebelum ujian: tidak ada membaca ulang dari awal, hanya uji diri campuran, karena ujian sebenarnya juga mencampur semua bab. Dan kalau satu poin selalu salah, itu bukan tanda kamu bodoh. Itu tanda cara menyimpannya belum tepat: ubah kalimatnya menjadi pertanyaan, lalu jawab pertanyaan itu besok."
+      en: "A concrete example, say your exam is on the twentieth. Today: read one chapter, close it, write five points. Tomorrow: test those five, then add five new ones from the next section. Three days later: test everything and spend your time only on what was wrong. A week before the exam: no rereading from the top, only mixed self-testing, because the real exam mixes chapters too. And if one point is always wrong, that is not a sign you are stupid. It is a sign it was stored badly: turn the sentence into a question, then answer that question tomorrow."
+    on_screen:
+      id: "Jadwal kerja untuk satu ujian"
+      en: "A working schedule for one exam"
+    points:
+      id:
+        - "Hari 1: baca, tutup, tulis 5 poin"
+        - "Hari 2: uji 5 poin, tambah 5 baru"
+        - "Hari 4 dan H-7: uji campuran, bukan baca ulang"
+      en:
+        - "Day 1: read, close, write 5 points"
+        - "Day 2: test 5, add 5 new"
+        - "Day 4 and final week: mixed tests, no rereading"
+    claim_ids: []
+    asset_ids: []
+
+  - id: s9
     purpose: takeaway
     script:
-      id: "Protokol yang bisa kamu pakai malam ini: tutup catatan, tulis lima hal yang kamu ingat, cek yang salah, lalu ulangi besok dan tiga hari lagi. Total tambahan waktunya sekitar sepuluh menit. Episode berikutnya membahas cara memilih jeda yang tepat untuk ujian yang sudah ada tanggalnya."
-      en: "A protocol you can use tonight: close your notes, write five things you remember, check what you got wrong, then repeat tomorrow and again in three days. The extra time is about ten minutes. The next episode covers how to pick the right gap when your exam already has a date."
+      id: "Ringkasnya empat kalimat. Lupa itu normal, dan bentuk kurvanya bisa diubah. Membaca ulang terasa produktif, tapi menguji diri yang benar-benar menyimpan. Jeda mengalahkan tumpukan, untuk jumlah menit yang sama. Dan rasa familiar bukan bukti bahwa kamu bisa. Kalau kamu hanya mengubah satu hal minggu ini, tutup catatan sepuluh menit sebelum selesai belajar. Episode berikutnya membahas cara memilih panjang jeda yang tepat kalau ujianmu sudah punya tanggal tetap."
+      en: "Four sentences to take away. Forgetting is normal, and the shape of the curve can be changed. Rereading feels productive, but self-testing is what stores. Spacing beats cramming, for the same number of minutes. And familiarity is not proof that you can recall. If you change one thing this week, close your notes ten minutes before you finish studying. The next episode covers how to pick the right gap when your exam already has a fixed date."
     on_screen:
       id: "Tutup catatan. Tulis. Ulangi besok."
       en: "Close notes. Write. Repeat tomorrow."
+    points:
+      id:
+        - "Lupa normal, kurvanya bisa diubah"
+        - "Uji diri menyimpan, baca ulang tidak"
+        - "Jeda mengalahkan tumpukan, menit sama"
+      en:
+        - "Forgetting is normal, the curve is changeable"
+        - "Self-testing stores, rereading does not"
+        - "Spacing beats cramming, same minutes"
     claim_ids: []
     asset_ids: []
 
@@ -172,8 +275,8 @@ shorts:
     hook:
       id: "Setengah yang kamu hafal semalam hilang sebelum siang. Ini alasannya."
       en: "Half of what you memorised last night is gone before noon. Here is why."
-    target_seconds: 38
-    scene_ids: [s1, s3]
+    target_seconds: 50
+    scene_ids: [s3]
     related_video: true
     cta:
       id: "Versi lengkapnya ada di video panjang di channel ini."
@@ -182,7 +285,7 @@ shorts:
     hook:
       id: "Menstabilo terasa seperti belajar. Menurut riset, itu justru jebakan."
       en: "Highlighting feels like studying. The research says it is a trap."
-    target_seconds: 34
+    target_seconds: 40
     scene_ids: [s6]
     related_video: true
     cta:
@@ -192,8 +295,8 @@ shorts:
     hook:
       id: "Belajar 3 jam sekali duduk kalah dari 3 sesi 20 menit. Ini mekanismenya."
       en: "One three-hour session loses to three twenty-minute sessions. Here is the mechanism."
-    target_seconds: 42
-    scene_ids: [s5, s7]
+    target_seconds: 45
+    scene_ids: [s5]
     related_video: true
     cta:
       id: "Protokol lengkapnya di video panjang."
