@@ -4,11 +4,14 @@ import path from "node:path";
 import { readAudioManifestSync } from "./audio";
 import { checkEpisode, keywordOverlap, summarize } from "./compliance";
 import { loadAllEpisodes, loadEpisode } from "./loader";
-import { audioFor, buildLongPlan, buildManifest, buildShortPlans, missingNarration, stamp } from "./plan";
+import { audioFor, buildLongPlan, buildManifest, buildShortPlans, stamp, type LongPlan, type ShortPlan } from "./plan";
 import { LOCALES, type Locale } from "./schema";
 import { synthesizeEpisode } from "./tts";
 
 const OUT_DIR = "dist/plan";
+const MIN_MASTER_S = 240;
+const MAX_MASTER_S = 900;
+const MAX_SHORT_S = 60;
 
 type MatrixEntry = {
   slug: string;
@@ -104,41 +107,69 @@ async function commandPlan(slug: string | undefined, flags: Record<string, strin
   }
 
   const audioManifest = readAudioManifestSync(slug);
+  const built: { locale: Locale; long: LongPlan; shorts: ShortPlan[] }[] = [];
+
+  // Build first, so nothing is written when the narration is incomplete.
+  for (const locale of locales) {
+    try {
+      const audio = audioManifest?.locales[locale];
+      built.push({
+        locale,
+        long: buildLongPlan(episode, locale, audio),
+        shorts: buildShortPlans(episode, locale, audio),
+      });
+    } catch (error) {
+      console.error((error as Error).message);
+      return 1;
+    }
+  }
+
+  // Runtime gate: only knowable now that the audio exists.
+  let blocking = false;
+  for (const { locale, long, shorts } of built) {
+    const tooShort = long.total_duration_s < MIN_MASTER_S;
+    const tooLong = long.total_duration_s > MAX_MASTER_S;
+    if (tooShort || tooLong) {
+      const message = `${locale}: master is ${stamp(long.total_duration_s)} (${long.total_duration_s}s), target 4–15 min`;
+      if (episode.data.status === "ready") {
+        console.error(`ERROR duration: ${message}`);
+        blocking = true;
+      } else {
+        console.warn(`! duration: ${message} — draft, not blocking`);
+      }
+    }
+    for (const short of shorts) {
+      if (short.total_duration_s > MAX_SHORT_S) {
+        console.warn(
+          `! ${locale}/${short.short_id}: ${short.total_duration_s}s of narration — over the 60s cap, cut a scene`,
+        );
+      }
+    }
+  }
+  if (blocking) {
+    console.error("Refusing to plan: fix the runtime first (add or cut scenes, then re-run tts).");
+    return 1;
+  }
+
   await mkdir(OUT_DIR, { recursive: true });
   const written: string[] = [];
   const produced: { locale: Locale; kind: string; id: string; body: unknown; duration_s: number }[] = [];
-  let silentScenes = 0;
 
-  for (const locale of locales) {
-    const audio = audioManifest?.locales[locale];
-    const missing = missingNarration(episode, locale);
-    silentScenes += missing.length;
-    if (missing.length > 0) {
-      console.warn(
-        `! ${locale}: ${missing.length} scene(s) without narration (${missing.join(", ")}) — run: npm run tts -- ${slug} --locales ${locale}`,
-      );
-    }
-
-    const long = buildLongPlan(episode, locale, audio);
+  for (const { locale, long, shorts } of built) {
     const longFile = path.join(OUT_DIR, `${slug}.${locale}.long.json`);
     await writeFile(longFile, JSON.stringify(long, null, 2));
     written.push(longFile);
     produced.push({ locale, kind: "long", id: "long", body: long, duration_s: long.total_duration_s });
 
     const uploadFile = path.join(OUT_DIR, `${slug}.${locale}.upload.json`);
-    await writeFile(uploadFile, JSON.stringify({ ...long.meta, audio_ready: missing.length === 0 }, null, 2));
+    await writeFile(uploadFile, JSON.stringify(long.meta, null, 2));
     written.push(uploadFile);
 
-    for (const short of buildShortPlans(episode, locale, audio)) {
+    for (const short of shorts) {
       const shortFile = path.join(OUT_DIR, `${slug}.${locale}.short-${short.short_id}.json`);
       await writeFile(shortFile, JSON.stringify(short, null, 2));
       written.push(shortFile);
       produced.push({ locale, kind: "short", id: short.short_id, body: short, duration_s: short.total_duration_s });
-      if (short.total_duration_s > 60) {
-        console.warn(
-          `! ${locale}/${short.short_id}: ${short.total_duration_s}s of narration — over the 60s Short cap, cut a scene`,
-        );
-      }
     }
   }
 
@@ -148,11 +179,8 @@ async function commandPlan(slug: string | undefined, flags: Record<string, strin
   written.push(manifestFile);
 
   for (const file of written) console.log(`wrote ${file}`);
-  const long = buildLongPlan(episode, locales[0] as Locale, audioFor(slug, locales[0] as Locale));
-  const audioState = silentScenes === 0 ? "with narration" : `${silentScenes} silent scene(s)`;
-  console.log(
-    `\n${slug}: ${locales.join(" + ")} · ${stamp(long.total_duration_s)} master (${audioState}) · ${episode.data.shorts.length} short(s) per locale`,
-  );
+  const summary = built.map(({ locale, long }) => `${locale} ${stamp(long.total_duration_s)}`).join(" · ");
+  console.log(`\n${slug}: ${summary} · ${episode.data.shorts.length} short(s) per locale · timeline = narration only`);
   return 0;
 }
 
@@ -160,7 +188,13 @@ async function commandDescribe(slug: string | undefined, flags: Record<string, s
   if (!slug) throw new Error("usage: describe <slug> --locale en");
   const episode = await loadEpisode(slug);
   for (const locale of parseLocales(flags.locale ?? flags.locales)) {
-    const plan = buildLongPlan(episode, locale, audioFor(slug, locale));
+    let plan: LongPlan;
+    try {
+      plan = buildLongPlan(episode, locale, audioFor(slug, locale));
+    } catch (error) {
+      console.error((error as Error).message);
+      return 1;
+    }
     console.log(`\n===== ${locale.toUpperCase()} · ${plan.meta.title} (${plan.meta.description.length} chars) =====\n`);
     console.log(plan.meta.description);
     console.log(`\nTags: ${plan.meta.tags.join(", ") || "(none)"}`);
@@ -251,7 +285,7 @@ async function main(): Promise<number> {
           "",
           "  validate                       check every episode against the compliance gates",
           "  tts <slug> [--locales id,en]   synthesise per-scene narration with Piper",
-          "  plan <slug> [--locales id,en]  write render plans + upload metadata to dist/plan",
+          "  plan <slug> [--locales id,en]  write render plans from the narration timeline",
           "  describe <slug> --locale en    print the YouTube description with chapters",
           "  matrix <slug> [--github-output] render matrix for GitHub Actions",
           '  topic --keywords "a,b,c"       test a new thesis against past episodes',

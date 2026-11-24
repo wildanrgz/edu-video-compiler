@@ -13,7 +13,8 @@ export type PlannedScene = {
   text: string;
   on_screen?: string;
   citations: Citation[];
-  /** Narration track, relative to public/ — consumed by staticFile() in Remotion. */
+  /** Narration track, relative to public/ — consumed by staticFile() in Remotion.
+   *  The planner always sets it; it is optional only so the studio placeholder compiles. */
   audio?: string | null;
   /** Speech-only length, for reference in the upload checklist. */
   narration_s?: number;
@@ -60,6 +61,22 @@ const PURPOSE_LABEL: Record<string, { id: string; en: string }> = {
   cta: { id: "Langkah berikutnya", en: "Next step" },
 };
 
+/** Thrown when a scene has no narration track, i.e. when there is no timeline. */
+export class NarrationMissingError extends Error {
+  constructor(
+    readonly slug: string,
+    readonly locale: Locale,
+    readonly sceneIds: string[],
+  ) {
+    super(
+      `No narration for ${locale} (${sceneIds.join(", ")}). ` +
+        `The timeline comes from the audio alone, so there is nothing to plan.\n` +
+        `  Fix: npm run tts -- ${slug} --locales ${locale}`,
+    );
+    this.name = "NarrationMissingError";
+  }
+}
+
 /** m:ss, the only timestamp format YouTube chapters accept. */
 export function stamp(seconds: number): string {
   const total = Math.max(0, Math.round(seconds));
@@ -80,35 +97,34 @@ function sceneAudio(audio: AudioLocale | undefined): Map<string, AudioLocale["sc
 }
 
 /**
- * A scene's timeline length is the length of its narration. When audio exists it wins
- * over the authored number, so the picture never drifts away from the voice.
+ * The narration IS the timeline: every scene starts where the previous audio ends.
+ * There is no authored duration to drift away from, and no silent fallback.
  */
 function planScenes(episode: Episode, locale: Locale, sceneIds: string[], audio?: AudioLocale): PlannedScene[] {
   const byId = sceneAudio(audio);
-  let cursor = 0;
+  const missing = sceneIds.filter((id) => !byId.has(id));
+  if (missing.length > 0) {
+    throw new NarrationMissingError(episode.slug, locale, missing);
+  }
 
+  let cursor = 0;
   return sceneIds.flatMap((id) => {
     const scene = episode.scenes.find((candidate) => candidate.id === id);
-    if (!scene) return [];
-    const narration = byId.get(scene.id);
+    const narration = byId.get(id);
+    if (!scene || !narration) return [];
 
     const planned: PlannedScene = {
       id: scene.id,
       purpose: scene.purpose,
       start_s: Math.round(cursor * 100) / 100,
-      duration_s: narration ? narration.duration_s : scene.duration_s,
+      duration_s: narration.duration_s,
       text: scene.script[locale],
       citations: citationsFor(episode, scene.claim_ids),
+      audio: narration.file,
+      narration_s: narration.narration_s,
     };
     if (scene.on_screen) planned.on_screen = scene.on_screen[locale];
-    if (narration) {
-      planned.audio = narration.file;
-      planned.narration_s = narration.narration_s;
-    } else {
-      planned.audio = null;
-    }
 
-    planned.start_s = Math.round(cursor * 100) / 100;
     cursor += planned.duration_s;
     return [planned];
   });
@@ -206,8 +222,8 @@ export function buildLongPlan(episode: LoadedEpisode, locale: Locale, audio?: Au
 }
 
 /**
- * Shorts reuse the long-form scene narration, so a Short can never drift from the
- * master. Its length is whatever those scenes take to say out loud.
+ * Shorts reuse the long-form scene narration and its timings, so a Short can never
+ * drift from the master. Its length is whatever those scenes take to say out loud.
  */
 export function buildShortPlans(episode: LoadedEpisode, locale: Locale, audio?: AudioLocale): ShortPlan[] {
   const ep = episode.data;
@@ -225,13 +241,6 @@ export function buildShortPlans(episode: LoadedEpisode, locale: Locale, audio?: 
       scenes,
     };
   });
-}
-
-/** Scenes the narration step has not covered yet. */
-export function missingNarration(episode: LoadedEpisode, locale: Locale): string[] {
-  const audio = readAudioManifestSync(episode.data.slug)?.locales[locale];
-  const covered = new Set((audio?.scenes ?? []).map((scene) => scene.id));
-  return episode.data.scenes.filter((scene) => !covered.has(scene.id)).map((scene) => scene.id);
 }
 
 export const audioFor = (slug: string, locale: Locale): AudioLocale | undefined =>
