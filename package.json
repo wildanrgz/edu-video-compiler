@@ -9,6 +9,7 @@
   },
   "scripts": {
     "validate": "tsx src/cli.ts validate",
+    "tts": "tsx src/cli.ts tts",
     "plan": "tsx src/cli.ts plan",
     "describe": "tsx src/cli.ts describe",
     "matrix": "tsx src/cli.ts matrix",
