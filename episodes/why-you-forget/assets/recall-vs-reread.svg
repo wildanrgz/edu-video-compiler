@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#0B1020"/>
+  <text x="120" y="140" fill="#F5F7FA" font-family="sans-serif" font-size="44" font-weight="700">Baca ulang vs uji diri</text>
+  <text x="120" y="196" fill="#8A93AE" font-family="sans-serif" font-size="26">retensi setelah 1 minggu</text>
+  <rect x="120" y="300" width="300" height="300" rx="12" fill="#33405F"/>
+  <rect x="560" y="380" width="300" height="220" rx="12" fill="#FFD166"/>
+  <text x="150" y="660" fill="#C9D1E6" font-family="sans-serif" font-size="30">Baca ulang</text>
+  <text x="590" y="660" fill="#C9D1E6" font-family="sans-serif" font-size="30">Uji diri</text>
+  <text x="920" y="420" fill="#FFD166" font-family="sans-serif" font-size="34" font-weight="700">lebih banyak</text>
+  <text x="920" y="470" fill="#FFD166" font-family="sans-serif" font-size="34" font-weight="700">yang bertahan</text>
+</svg>
