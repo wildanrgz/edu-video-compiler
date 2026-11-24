@@ -1,0 +1,212 @@
+slug: why-you-forget
+status: ready
+
+title:
+  id: "Kenapa kamu lupa hal yang baru kamu pelajari"
+  en: "Why you forget what you just learned"
+
+thesis:
+  id: "Lupa bukan bukti kamu lambat: membaca ulang terasa produktif tapi hanya menguji pengenalan, sedangkan mengambil kembali informasi dari ingatan tanpa melihat catatan itulah yang benar-benar menyimpannya."
+  en: "Forgetting is not proof you are slow: rereading feels productive but only tests recognition, while retrieving the answer from memory without looking is what actually stores it."
+
+thesis_keywords:
+  - forgetting-curve
+  - retrieval-practice
+  - spaced-repetition
+  - study-method
+  - memory-retention
+  - rereading-myth
+
+audience:
+  id: "Pelajar dan pekerja yang sudah punya jam belajar tapi hasilnya tidak menempel"
+  en: "Students and working adults who already put in the hours but still cannot retain what they studied"
+
+presenter: none
+sensitive_topics: []
+
+disclosure:
+  aigc: true
+  synthetic_voice: true
+  sponsored: false
+
+assets:
+  - id: a1
+    kind: own_chart
+    path: assets/forgetting-curve.svg
+    own_work: true
+    licence: own
+  - id: a2
+    kind: own_chart
+    path: assets/recall-vs-reread.svg
+    own_work: true
+    licence: own
+  - id: a3
+    kind: own_animation
+    path: assets/spacing-timeline.svg
+    own_work: true
+    licence: own
+
+claims:
+  - id: c1
+    text:
+      id: "Ebbinghaus (1885) mengukur retensi pada dirinya sendiri dan menemukan penurunan tajam pada jam-jam pertama setelah belajar, bukan penurunan linear."
+      en: "Ebbinghaus (1885) measured his own retention and found the drop is steepest in the first hours after learning, not linear over days."
+    source:
+      title: "Ebbinghaus, Memory: A Contribution to Experimental Psychology (1885)"
+      url: "https://psychclassics.yorku.ca/Ebbinghaus/memory1.htm"
+      published: "1885"
+  - id: c2
+    text:
+      id: "Replikasi Murre & Dros (2015) menemukan pola lupa yang mirip, meski lebih lambat dari klaim Ebbinghaus dan sangat bervariasi antar individu."
+      en: "Murre & Dros (2015) replicated the forgetting pattern, though slower than Ebbinghaus claimed and highly variable between individuals."
+    source:
+      title: "Murre & Dros, Replication and Analysis of Ebbinghaus' Forgetting Curve (PLOS ONE, 2015)"
+      url: "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0120644"
+      published: "2015-07-06"
+  - id: c3
+    text:
+      id: "Roediger & Karpicke (2006) menunjukkan bahwa menguji diri (retrieval) menghasilkan retensi lebih baik daripada membaca ulang, walaupun peserta merasa membaca ulang lebih efektif."
+      en: "Roediger & Karpicke (2006) showed that self-testing produces better retention than rereading, even though participants believed rereading worked better."
+    source:
+      title: "Roediger & Karpicke, Test-Enhanced Learning (Psychological Science, 2006)"
+      url: "https://journals.sagepub.com/doi/10.1111/j.1467-9280.2006.01693.x"
+      published: "2006-03"
+  - id: c4
+    text:
+      id: "Meta-analisis Cepeda dkk. (2006) menemukan bahwa jeda antar sesi belajar (spacing) meningkatkan retensi dibandingkan belajar menumpuk dalam satu waktu."
+      en: "Cepeda et al. (2006) found that spacing study sessions apart improves retention compared with massing them into one block."
+    source:
+      title: "Cepeda et al., Distributed practice in verbal recall tasks (Psychological Bulletin, 2006)"
+      url: "https://doi.org/10.1037/0033-2909.132.3.354"
+      published: "2006"
+
+scenes:
+  - id: s1
+    purpose: hook
+    duration_s: 25
+    script:
+      id: "Kamu belajar tiga jam semalam. Pagi ini, setengahnya sudah hilang. Dan hampir semua orang menyimpulkan hal yang salah tentang itu."
+      en: "You studied for three hours last night. This morning, half of it is gone. And almost everyone draws the wrong conclusion about why."
+    on_screen:
+      id: "Setengahnya hilang dalam semalam"
+      en: "Half of it is gone by morning"
+    claim_ids: []
+    asset_ids: []
+
+  - id: s2
+    purpose: context
+    duration_s: 42
+    script:
+      id: "Ingatan bukan rekaman. Otak menyimpan jejak, bukan file. Jejak itu melemah kalau tidak pernah dipanggil, dan cara kamu memanggilnya menentukan seberapa kuat ia bertahan."
+      en: "Memory is not a recording. The brain stores traces, not files. A trace weakens when it is never retrieved, and how you retrieve it decides how long it survives."
+    on_screen:
+      id: "Ingatan = jejak, bukan file"
+      en: "Memory = traces, not files"
+    claim_ids: []
+    asset_ids: []
+
+  - id: s3
+    purpose: evidence
+    duration_s: 70
+    script:
+      id: "Ebbinghaus pada 1885 mengukur dirinya sendiri dan menemukan penurunan paling tajam terjadi di jam-jam pertama, bukan perlahan sepanjang minggu. Replikasi modern tahun 2015 menemukan pola serupa, hanya lebih lambat dan sangat berbeda antar orang. Artinya: yang kamu alami pagi ini normal, dan bentuk kurvanya bisa diubah."
+      en: "In 1885 Ebbinghaus measured himself and found the sharpest drop happens in the first hours, not gradually over a week. A 2015 replication found the same shape, just slower and far more variable between people. So what you felt this morning is normal, and the shape of that curve is changeable."
+    on_screen:
+      id: "Kurva lupa: tajam di awal"
+      en: "The forgetting curve: steepest first"
+    claim_ids: [c1, c2]
+    asset_ids: [a1]
+
+  - id: s4
+    purpose: explain
+    duration_s: 88
+    script:
+      id: "Di tahun 2006, Roediger dan Karpicke membandingkan dua kelompok. Kelompok pertama membaca ulang materi. Kelompok kedua menutup buku dan menuliskan apa yang mereka ingat. Saat diuji seminggu kemudian, kelompok yang menguji diri mengingat jauh lebih banyak. Yang menarik: kelompok pembaca ulang merasa lebih yakin akan hasilnya. Rasa yakin itu bukan retensi."
+      en: "In 2006, Roediger and Karpicke compared two groups. One reread the material. The other closed the book and wrote down what they remembered. Tested a week later, the self-testing group remembered substantially more. The interesting part: the rereaders felt more confident about their result. That confidence is not retention."
+    on_screen:
+      id: "Baca ulang vs uji diri"
+      en: "Rereading vs self-testing"
+    claim_ids: [c3]
+    asset_ids: [a2]
+
+  - id: s5
+    purpose: explain
+    duration_s: 72
+    script:
+      id: "Faktor kedua adalah jeda. Meta-analisis dari 2006 atas ratusan eksperimen menemukan bahwa menyebar sesi belajar dalam beberapa hari mengalahkan menumpuk semuanya dalam satu malam. Bukan karena belajarnya lebih lama, tapi karena setiap kali kamu memanggil kembali setelah agak lupa, jejaknya diperkuat."
+      en: "The second factor is the gap. A 2006 meta-analysis across hundreds of experiments found that spreading sessions over several days beats cramming them into one night. Not because you study longer, but because each retrieval after partial forgetting strengthens the trace."
+    on_screen:
+      id: "Jeda mengalahkan tumpukan"
+      en: "Spacing beats cramming"
+    claim_ids: [c4]
+    asset_ids: [a3]
+
+  - id: s6
+    purpose: counterpoint
+    duration_s: 58
+    script:
+      id: "Jadi kenapa semua orang masih membaca ulang? Karena menstabilo dan membaca ulang terasa enak. Materinya terasa familiar, dan familiaritas terasa seperti pemahaman. Tapi familiaritas hanya membuktikan kamu pernah melihatnya, bukan bahwa kamu bisa memproduksinya saat diminta."
+      en: "So why does everyone still reread? Because highlighting and rereading feel good. The material feels familiar, and familiarity feels like understanding. But familiarity only proves you have seen it, not that you can produce it when asked."
+    on_screen:
+      id: "Familiar bukan berarti bisa"
+      en: "Familiar is not recallable"
+    claim_ids: [c3]
+    asset_ids: []
+
+  - id: s7
+    purpose: takeaway
+    duration_s: 45
+    script:
+      id: "Protokol yang bisa kamu pakai malam ini: tutup catatan, tulis lima hal yang kamu ingat, cek yang salah, lalu ulangi besok dan tiga hari lagi. Total tambahan waktunya sekitar sepuluh menit. Episode berikutnya membahas cara memilih jeda yang tepat untuk ujian yang sudah ada tanggalnya."
+      en: "A protocol you can use tonight: close your notes, write five things you remember, check what you got wrong, then repeat tomorrow and again in three days. The extra time is about ten minutes. The next episode covers how to pick the right gap when your exam already has a date."
+    on_screen:
+      id: "Tutup catatan. Tulis. Ulangi besok."
+      en: "Close notes. Write. Repeat tomorrow."
+    claim_ids: []
+    asset_ids: []
+
+shorts:
+  - id: sh1
+    hook:
+      id: "Setengah yang kamu hafal semalam hilang sebelum siang. Ini alasannya."
+      en: "Half of what you memorised last night is gone before noon. Here is why."
+    target_seconds: 38
+    scene_ids: [s1, s3]
+    related_video: true
+    cta:
+      id: "Versi lengkapnya ada di video panjang di channel ini."
+      en: "The full breakdown is in the long-form video on this channel."
+  - id: sh2
+    hook:
+      id: "Menstabilo terasa seperti belajar. Menurut riset, itu justru jebakan."
+      en: "Highlighting feels like studying. The research says it is a trap."
+    target_seconds: 34
+    scene_ids: [s6]
+    related_video: true
+    cta:
+      id: "Cara yang benar ada di video panjangnya."
+      en: "The method that works is in the long video."
+  - id: sh3
+    hook:
+      id: "Belajar 3 jam sekali duduk kalah dari 3 sesi 20 menit. Ini mekanismenya."
+      en: "One three-hour session loses to three twenty-minute sessions. Here is the mechanism."
+    target_seconds: 42
+    scene_ids: [s5, s7]
+    related_video: true
+    cta:
+      id: "Protokol lengkapnya di video panjang."
+      en: "Full protocol in the long-form video."
+
+tags:
+  id:
+    - belajar efektif
+    - spaced repetition
+    - kurva lupa
+    - teknik belajar
+    - retensi memori
+  en:
+    - how to study
+    - spaced repetition
+    - forgetting curve
+    - active recall
+    - memory retention
