@@ -77,7 +77,7 @@ export type Asset = z.infer<typeof assetSchema>;
 export const sceneSchema = z.object({
   id: z.string().regex(/^s\d+$/, "scene id must look like s1, s2, ..."),
   purpose: z.enum(SCENE_PURPOSES),
-  duration_s: z.number().min(4).max(240),
+  /** No duration here on purpose: the timeline comes from the narration WAV. */
   script: localizedText,
   on_screen: localizedText.optional(),
   claim_ids: z.array(z.string()).default([]),
@@ -89,6 +89,7 @@ export const shortSchema = z.object({
   id: z.string().regex(/^sh\d+$/, "short id must look like sh1, sh2, ..."),
   /** The first 2 seconds. If this line does not earn the scroll-stop, nothing else matters. */
   hook: localizedText,
+  /** Design intent only; the real length is whatever the narration takes. */
   target_seconds: z.number().min(15).max(60),
   scene_ids: z.array(z.string()).min(1),
   /** Related-video link set in YouTube Studio: turns a Short into a bridge. */

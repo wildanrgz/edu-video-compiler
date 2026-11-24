@@ -14,14 +14,9 @@ export function checkEpisode(episode: LoadedEpisode, all: LoadedEpisode[]): Issu
   const ep = episode.data;
   const push = (severity: Severity, rule: string, message: string) => issues.push({ severity, rule, message });
 
-  // --- structure ---------------------------------------------------------
-  const totalDuration = ep.scenes.reduce((sum, scene) => sum + scene.duration_s, 0);
-  if (totalDuration < 240) {
-    push("error", "duration_min", `long-form is ${totalDuration}s; a master shorter than 240s cannot carry 4,000 watch hours`);
-  }
-  if (totalDuration > 900) {
-    push("error", "duration_max", `long-form is ${totalDuration}s; over 15 min the retention curve stops paying for itself`);
-  }
+  // --- structure -----------------------------------------------------------
+  // Runtime is not knowable until the narration exists, so the 4-15 minute gate
+  // lives in `plan`, where the real audio lengths are known.
   if (ep.scenes[0]?.purpose !== "hook") {
     push("warn", "hook_first", "scene 1 should have purpose: hook");
   }
@@ -29,7 +24,7 @@ export function checkEpisode(episode: LoadedEpisode, all: LoadedEpisode[]): Issu
     push("warn", "no_evidence_scene", "no scene with purpose: evidence — the thesis is asserted, not shown");
   }
 
-  // --- references -------------------------------------------------------
+  // --- references ----------------------------------------------------------
   const claimIds = new Set(ep.claims.map((claim) => claim.id));
   const assetIds = new Set(ep.assets.map((asset) => asset.id));
   const sceneIds = new Set(ep.scenes.map((scene) => scene.id));
@@ -53,7 +48,7 @@ export function checkEpisode(episode: LoadedEpisode, all: LoadedEpisode[]): Issu
     if (!usedClaims.has(claim.id)) push("warn", "claim_unused", `${claim.id} has a source but no scene says it aloud`);
   }
 
-  // --- sources ----------------------------------------------------------
+  // --- sources -------------------------------------------------------------
   for (const claim of ep.claims) {
     let host = "";
     try {
@@ -69,7 +64,7 @@ export function checkEpisode(episode: LoadedEpisode, all: LoadedEpisode[]): Issu
     }
   }
 
-  // --- originality ------------------------------------------------------
+  // --- originality ---------------------------------------------------------
   const originalAssets = ep.assets.filter((asset) => asset.own_work).length;
   if (originalAssets < 2) {
     push("error", "min_original_assets", `needs at least 2 own-work assets (has ${originalAssets}) to survive the inauthentic-content policy`);
@@ -84,7 +79,7 @@ export function checkEpisode(episode: LoadedEpisode, all: LoadedEpisode[]): Issu
     }
   }
 
-  // --- disclosure & safety ----------------------------------------------
+  // --- disclosure & safety -------------------------------------------------
   if (ep.disclosure.synthetic_voice && !ep.disclosure.aigc) {
     push("error", "aigc_undisclosed", "synthetic_voice is true but disclosure.aigc is false");
   }
@@ -96,7 +91,7 @@ export function checkEpisode(episode: LoadedEpisode, all: LoadedEpisode[]): Issu
     );
   }
 
-  // --- bilingual integrity ----------------------------------------------
+  // --- bilingual integrity -------------------------------------------------
   for (const scene of ep.scenes) {
     if (normalizeForHash(scene.script.id) === normalizeForHash(scene.script.en)) {
       push("warn", "scene_untranslated", `${scene.id} has the same text in id and en — likely an unfinished translation`);
@@ -108,7 +103,7 @@ export function checkEpisode(episode: LoadedEpisode, all: LoadedEpisode[]): Issu
     }
   }
 
-  // --- duplicate thesis against history ---------------------------------
+  // --- duplicate thesis against history ------------------------------------
   const keywords = new Set(ep.thesis_keywords.map((word) => word.toLowerCase()));
   for (const other of all) {
     if (other.data.slug === ep.slug) continue;
@@ -129,7 +124,7 @@ export function checkEpisode(episode: LoadedEpisode, all: LoadedEpisode[]): Issu
     }
   }
 
-  // --- shorts -----------------------------------------------------------
+  // --- shorts --------------------------------------------------------------
   if (ep.shorts.length === 0) {
     push("warn", "no_shorts", "no Shorts defined — the episode gets no cheap topic test or bridge");
   }
@@ -149,7 +144,7 @@ export function checkEpisode(episode: LoadedEpisode, all: LoadedEpisode[]): Issu
     }
   }
 
-  // --- metadata budget --------------------------------------------------
+  // --- metadata budget -----------------------------------------------------
   if (ep.tags.id.length > 15 || ep.tags.en.length > 15) {
     push("warn", "tags_many", "more than 15 tags adds no reach on YouTube");
   }
