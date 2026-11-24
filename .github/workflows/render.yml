@@ -104,6 +104,9 @@ jobs:
       - name: Ensure headless Chromium
         run: npx remotion browser ensure
 
+      - name: Ensure render font
+        run: node scripts/ensure-font.mjs
+
       - name: Render ${{ matrix.locale }} / ${{ matrix.kind }} / ${{ matrix.id }}
         run: npx remotion render remotion/index.ts "${{ matrix.composition }}" "${{ matrix.output }}" --props="${{ matrix.props }}"
 
