@@ -1,0 +1,114 @@
+name: render
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Episode slug (folder under episodes/)"
+        required: true
+      locales:
+        description: "Comma separated: id,en"
+        default: "id,en"
+      publish_release:
+        description: "Attach the MP4s to a GitHub Release"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+env:
+  FORCE_COLOR: "1"
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install --no-audit --no-fund
+
+      - name: Compliance gates (render is blocked here, not later)
+        run: npx tsx src/cli.ts validate
+
+      - name: Build plans and upload metadata
+        run: npx tsx src/cli.ts plan "${{ inputs.slug }}" --locales "${{ inputs.locales }}"
+
+      - name: Render matrix
+        id: matrix
+        run: npx tsx src/cli.ts matrix "${{ inputs.slug }}" --locales "${{ inputs.locales }}" --github-output >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plans
+          path: dist/plan
+
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install --no-audit --no-fund
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: plans
+          path: dist/plan
+
+      - name: Ensure headless Chromium
+        run: npx remotion browser ensure
+
+      - name: Render ${{ matrix.locale }} / ${{ matrix.kind }} / ${{ matrix.id }}
+        run: npx remotion render remotion/index.ts "${{ matrix.composition }}" "${{ matrix.output }}" --props="${{ matrix.props }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video-${{ matrix.locale }}-${{ matrix.kind }}-${{ matrix.id }}
+          path: ${{ matrix.output }}
+          if-no-files-found: error
+
+  release:
+    needs: [plan, render]
+    if: ${{ inputs.publish_release }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: video-*
+          merge-multiple: true
+          path: out
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: plans
+          path: dist/plan
+
+      - name: List rendered files
+        run: ls -lh out
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "${{ inputs.slug }}-${{ github.run_number }}"
+          name: "${{ inputs.slug }} · ${{ inputs.locales }}"
+          body: |
+            Rendered from commit ${{ github.sha }}.
+
+            Upload the long-form master to YouTube, then cut/upload the Shorts and set the
+            related-video link on each one. Files in this release are the render output only.
+          files: |
+            out/*.mp4
+            dist/plan/*.upload.json
+            dist/plan/*.manifest.json
