@@ -1,10 +1,12 @@
 #!/usr/bin/env tsx
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { readAudioManifestSync } from "./audio";
 import { checkEpisode, keywordOverlap, summarize } from "./compliance";
 import { loadAllEpisodes, loadEpisode } from "./loader";
-import { buildLongPlan, buildManifest, buildShortPlans, stamp } from "./plan";
+import { audioFor, buildLongPlan, buildManifest, buildShortPlans, missingNarration, stamp } from "./plan";
 import { LOCALES, type Locale } from "./schema";
+import { synthesizeEpisode } from "./tts";
 
 const OUT_DIR = "dist/plan";
 
@@ -75,6 +77,22 @@ async function commandValidate(): Promise<number> {
   return errorCount === 0 ? 0 : 1;
 }
 
+async function commandTts(slug: string | undefined, flags: Record<string, string>): Promise<number> {
+  if (!slug)
+    throw new Error("usage: tts <slug> [--locales id,en] [--piper path] [--voice-dir voices] [--force] [--dry-run]");
+  const manifest = await synthesizeEpisode({
+    slug,
+    locales: parseLocales(flags.locales),
+    piperCommand: flags.piper,
+    voiceDir: flags["voice-dir"],
+    force: flags.force === "true",
+    dryRun: flags["dry-run"] === "true",
+  });
+  const total = Object.values(manifest.locales).reduce((sum, locale) => sum + (locale?.total_s ?? 0), 0);
+  console.log(`\n${slug}: ${Object.keys(manifest.locales).join(" + ")} · ${total.toFixed(1)}s of narration generated`);
+  return 0;
+}
+
 async function commandPlan(slug: string | undefined, flags: Record<string, string>): Promise<number> {
   if (!slug) throw new Error("usage: plan <slug> [--locales id,en]");
   const locales = parseLocales(flags.locales);
@@ -85,26 +103,42 @@ async function commandPlan(slug: string | undefined, flags: Record<string, strin
     return 1;
   }
 
+  const audioManifest = readAudioManifestSync(slug);
   await mkdir(OUT_DIR, { recursive: true });
   const written: string[] = [];
-  const produced: { locale: Locale; kind: string; id: string; body: unknown }[] = [];
+  const produced: { locale: Locale; kind: string; id: string; body: unknown; duration_s: number }[] = [];
+  let silentScenes = 0;
 
   for (const locale of locales) {
-    const long = buildLongPlan(episode, locale);
+    const audio = audioManifest?.locales[locale];
+    const missing = missingNarration(episode, locale);
+    silentScenes += missing.length;
+    if (missing.length > 0) {
+      console.warn(
+        `! ${locale}: ${missing.length} scene(s) without narration (${missing.join(", ")}) — run: npm run tts -- ${slug} --locales ${locale}`,
+      );
+    }
+
+    const long = buildLongPlan(episode, locale, audio);
     const longFile = path.join(OUT_DIR, `${slug}.${locale}.long.json`);
     await writeFile(longFile, JSON.stringify(long, null, 2));
     written.push(longFile);
-    produced.push({ locale, kind: "long", id: "long", body: long });
+    produced.push({ locale, kind: "long", id: "long", body: long, duration_s: long.total_duration_s });
 
     const uploadFile = path.join(OUT_DIR, `${slug}.${locale}.upload.json`);
-    await writeFile(uploadFile, JSON.stringify(long.meta, null, 2));
+    await writeFile(uploadFile, JSON.stringify({ ...long.meta, audio_ready: missing.length === 0 }, null, 2));
     written.push(uploadFile);
 
-    for (const short of buildShortPlans(episode, locale)) {
+    for (const short of buildShortPlans(episode, locale, audio)) {
       const shortFile = path.join(OUT_DIR, `${slug}.${locale}.short-${short.short_id}.json`);
       await writeFile(shortFile, JSON.stringify(short, null, 2));
       written.push(shortFile);
-      produced.push({ locale, kind: "short", id: short.short_id, body: short });
+      produced.push({ locale, kind: "short", id: short.short_id, body: short, duration_s: short.total_duration_s });
+      if (short.total_duration_s > 60) {
+        console.warn(
+          `! ${locale}/${short.short_id}: ${short.total_duration_s}s of narration — over the 60s Short cap, cut a scene`,
+        );
+      }
     }
   }
 
@@ -114,8 +148,11 @@ async function commandPlan(slug: string | undefined, flags: Record<string, strin
   written.push(manifestFile);
 
   for (const file of written) console.log(`wrote ${file}`);
-  const long = buildLongPlan(episode, locales[0] as Locale);
-  console.log(`\n${slug}: ${locales.join(" + ")} · ${stamp(long.total_duration_s)} master · ${episode.data.shorts.length} short(s) per locale`);
+  const long = buildLongPlan(episode, locales[0] as Locale, audioFor(slug, locales[0] as Locale));
+  const audioState = silentScenes === 0 ? "with narration" : `${silentScenes} silent scene(s)`;
+  console.log(
+    `\n${slug}: ${locales.join(" + ")} · ${stamp(long.total_duration_s)} master (${audioState}) · ${episode.data.shorts.length} short(s) per locale`,
+  );
   return 0;
 }
 
@@ -123,7 +160,7 @@ async function commandDescribe(slug: string | undefined, flags: Record<string, s
   if (!slug) throw new Error("usage: describe <slug> --locale en");
   const episode = await loadEpisode(slug);
   for (const locale of parseLocales(flags.locale ?? flags.locales)) {
-    const plan = buildLongPlan(episode, locale);
+    const plan = buildLongPlan(episode, locale, audioFor(slug, locale));
     console.log(`\n===== ${locale.toUpperCase()} · ${plan.meta.title} (${plan.meta.description.length} chars) =====\n`);
     console.log(plan.meta.description);
     console.log(`\nTags: ${plan.meta.tags.join(", ") || "(none)"}`);
@@ -197,6 +234,8 @@ async function main(): Promise<number> {
   switch (command) {
     case "validate":
       return commandValidate();
+    case "tts":
+      return commandTts(argument, flags);
     case "plan":
       return commandPlan(argument, flags);
     case "describe":
@@ -211,6 +250,7 @@ async function main(): Promise<number> {
           "edu-video-compiler",
           "",
           "  validate                       check every episode against the compliance gates",
+          "  tts <slug> [--locales id,en]   synthesise per-scene narration with Piper",
           "  plan <slug> [--locales id,en]  write render plans + upload metadata to dist/plan",
           "  describe <slug> --locale en    print the YouTube description with chapters",
           "  matrix <slug> [--github-output] render matrix for GitHub Actions",

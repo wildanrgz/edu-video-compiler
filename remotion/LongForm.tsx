@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import type { LongPlan } from "../src/plan";
 import { SceneSlide } from "./SceneSlide";
 import { COLORS, FONT_STACK, FPS } from "./theme";
@@ -17,6 +17,7 @@ export const LongForm: React.FC<LongPlan> = ({ scenes, title, total_duration_s }
           from={Math.round(scene.start_s * FPS)}
           durationInFrames={Math.max(1, Math.round(scene.duration_s * FPS))}
         >
+          {scene.audio ? <Audio src={staticFile(scene.audio)} /> : null}
           <SceneSlide scene={scene} variant="long" showCitations />
         </Sequence>
       ))}

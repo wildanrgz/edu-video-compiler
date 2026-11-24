@@ -13,6 +13,7 @@ const sampleScene: LongPlan["scenes"][number] = {
   text: "Run with --props=dist/plan/<slug>.<locale>.long.json to render the real plan.",
   on_screen: "placeholder",
   citations: [{ label: "npm run plan <slug>", url: "https://github.com" }],
+  audio: null,
 };
 
 const fallbackLong: LongPlan = {
@@ -39,6 +40,7 @@ const fallbackShort: ShortPlan = {
   short_id: "sh1",
   hook: "Placeholder — pass a short plan JSON",
   cta: null,
+  target_seconds: 8,
   total_duration_s: 8,
   scenes: [sampleScene],
 };

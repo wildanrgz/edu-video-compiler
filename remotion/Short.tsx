@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Sequence, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import type { ShortPlan } from "../src/plan";
 import { SceneSlide } from "./SceneSlide";
 import { COLORS, FONT_STACK, FPS } from "./theme";
@@ -24,6 +24,7 @@ export const Short: React.FC<ShortPlan> = ({ scenes, hook, cta }) => {
           from={Math.round(scene.start_s * FPS)}
           durationInFrames={Math.max(1, Math.round(scene.duration_s * FPS))}
         >
+          {scene.audio ? <Audio src={staticFile(scene.audio)} /> : null}
           <SceneSlide scene={scene} variant="short" showCitations={false} />
         </Sequence>
       ))}
