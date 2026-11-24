@@ -12,6 +12,8 @@ export type PlannedScene = {
   duration_s: number;
   text: string;
   on_screen?: string;
+  /** Scene bullets rendered instead of the full script text. */
+  points?: string[];
   citations: Citation[];
   /** Narration track, relative to public/ — consumed by staticFile() in Remotion.
    *  The planner always sets it; it is optional only so the studio placeholder compiles. */
@@ -124,6 +126,7 @@ function planScenes(episode: Episode, locale: Locale, sceneIds: string[], audio?
       narration_s: narration.narration_s,
     };
     if (scene.on_screen) planned.on_screen = scene.on_screen[locale];
+    if (scene.points) planned.points = scene.points[locale];
 
     cursor += planned.duration_s;
     return [planned];
