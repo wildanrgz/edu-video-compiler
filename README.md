@@ -22,18 +22,29 @@ episodes/<slug>/episode.yml
 detik, slide dapat 24,36 detik — tidak ada audio terpotong dan tidak ada gambar
 yang menggantung. Karena itu `plan` menolak jalan sebelum audio ada.
 
-Master hasil ukur: id **2:10** (130,41 s di MP4), en **1:42** (102,02 s di MP4).
+Hasil ukur `why-you-forget` (9 scene, 8 file, run Actions `45360954077`):
+
+| Output | Durasi MP4 |
+| --- | --- |
+| `why-you-forget.id.long.mp4` | 5:36 (336,32 s) |
+| `why-you-forget.en.long.mp4` | 4:28 (267,65 s) |
+| id short sh1 / sh2 / sh3 | 46,19 / 38,51 / 41,07 s |
+| en short sh1 / sh2 / sh3 | 36,37 / 30,21 / 32,09 s |
+
+Selisih dengan plan maksimal 0,02 detik, dan semuanya membawa track audio.
 
 ## Sekali setup
 
 ```bash
 npm ci                                  # reproducible, butuh package-lock.json
+npm run font                            # unduh font render ke public/fonts (sekali, 48 KB)
 python3 -m venv .venv
 .venv/bin/pip install piper-tts
 .venv/bin/python -m piper.download_voices en_US-lessac-medium id_ID-news_tts-medium --download-dir voices
 ```
 
-Voice tidak masuk git (61 MB per model). `voices/` dan `public/audio/` ada di `.gitignore`.
+Voice dan font tidak masuk git (61 MB per model suara). `voices/`, `public/audio/`,
+`public/fonts/` ada di `.gitignore`.
 
 ## Perintah
 
@@ -47,8 +58,8 @@ npm run studio                                             # pratinjau Remotion
 npm run render:short -- out/test.mp4 --props=dist/plan/why-you-forget.en.short-sh1.json
 ```
 
-Render penuh (8 file: 2 bahasa × master + 3 Short) lewat GitHub Actions:
-**Actions → render → Run workflow**, isi `slug`. Job `plan` yang menyintesis
+Render penuh (8 file: 2 bahasa x master + 3 Short) lewat GitHub Actions:
+**Actions -> render -> Run workflow**, isi `slug`. Job `plan` yang menyintesis
 narasi, lalu 8 job render paralel memakainya. `publish_release: false` = hasil
 hanya jadi artefak, tanpa Release.
 
@@ -68,6 +79,34 @@ hanya jadi artefak, tanpa Release.
 - Short memakai audio scene yang sama dengan master, jadi Short tidak pernah
   berbeda dari video panjangnya.
 
+## Tampilan
+
+- Satu scene = satu frame: judul kecil (warna aksen) di atas, lalu 2-4 poin
+  pendek dari `points:`. Kalau `points` tidak ada, teks skrip lengkap yang
+  ditampilkan (dan mengecil sendiri) — tapi naskah 30 detik di layar adalah
+  dinding teks, jadi `points` hampir selalu lebih baik.
+- **Font di-bundle.** Host tanpa font sama sekali (container minimal, tanpa
+  fontconfig) membuat Chromium menggambar nol glyph: videonya jadi background
+  kosong padahal semua pengecekan durasi lolos. Karena itu
+  `scripts/ensure-font.mjs` mengunduh satu file WOFF2 ke `public/fonts/`, dan
+  `remotion/fonts.ts` memuatnya sebelum frame pertama dirender. Tanpa langkah ini,
+  MP4 tetap terbentuk, tetap punya durasi benar, tetap punya audio — dan kosong.
+
+## Render di luar Actions
+
+Render lokal jalan tanpa root, asal library Chromium tersedia:
+
+```bash
+npx remotion browser ensure
+mkdir -p .libs && cd .libs && \
+  curl -fsSLO http://archive.ubuntu.com/ubuntu/pool/main/n/nspr/libnspr4_4.35-1.1build1_amd64.deb && \
+  curl -fsSLO http://archive.ubuntu.com/ubuntu/pool/main/n/nss/libnss3_3.98-1build1_amd64.deb && \
+  for f in *.deb; do dpkg-deb -x "$f" root; done && cd ..
+export LD_LIBRARY_PATH="$PWD/.libs/root/usr/lib/x86_64-linux-gnu"
+npm run font
+npx remotion render remotion/index.ts Short out/test.mp4 --props=dist/plan/why-you-forget.id.short-sh3.json
+```
+
 ## Yang memblokir render
 
 Gate di `src/compliance.ts` + `src/cli.ts`, sengaja keras, karena ini yang
@@ -83,7 +122,7 @@ membedakan "video edukasi" dari "template AI yang tidak layak monetisasi":
 | `aigc_undisclosed` | validate | suara sintetis wajib `disclosure.aigc: true` |
 | `cml_asset` | validate | lagu TikTok Commercial Music Library tidak boleh masuk MP4 |
 | `narration` | plan | scene tanpa audio = tidak ada timeline, plan gagal |
-| `duration` | plan | 4–15 menit untuk `status: ready`; `draft` hanya warning |
+| `duration` | plan | 4-15 menit untuk `status: ready`; `draft` hanya warning |
 
 Warning (tidak memblokir): Short > 60 detik, hook terlalu panjang, tanpa
 related-video link, tanpa CTA, klaim yang tidak pernah diucapkan.
@@ -97,5 +136,5 @@ related-video link, tanpa CTA, klaim yang tidak pernah diucapkan.
 ## Reproducible builds
 
 `package.json` memakai versi **persis** (tanpa `^`), dan `package-lock.json`
-di-commit. Kalau menambah dependency: jalankan **Actions → lockfile → Run
+di-commit. Kalau menambah dependency: jalankan **Actions -> lockfile -> Run
 workflow**, lalu `npm ci` di runner akan memakai isi lockfile yang sama.
