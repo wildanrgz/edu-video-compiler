@@ -24,6 +24,14 @@ audience:
 presenter: none
 sensitive_topics: []
 
+tts:
+  id:
+    voice: id_ID-news_tts-medium
+    length_scale: 0.95
+  en:
+    voice: en_US-lessac-medium
+    length_scale: 0.95
+
 disclosure:
   aigc: true
   synthetic_voice: true

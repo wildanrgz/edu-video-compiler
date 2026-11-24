@@ -30,13 +30,35 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      - run: npm install --no-audit --no-fund
+      - run: npm ci
 
       - name: Compliance gates (render is blocked here, not later)
         run: npx tsx src/cli.ts validate
 
-      - name: Build plans and upload metadata
+      - name: Cache Piper voices
+        uses: actions/cache@v4
+        with:
+          path: voices
+          key: piper-voices-v1-en_US-lessac-medium-id_ID-news_tts-medium
+
+      - name: Install Piper (free, CPU-only)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install piper-tts
+
+      - name: Download voices if missing
+        run: |
+          python -m piper.download_voices en_US-lessac-medium id_ID-news_tts-medium --download-dir voices
+
+      - name: Synthesise narration
+        run: npx tsx src/cli.ts tts "${{ inputs.slug }}" --locales "${{ inputs.locales }}"
+
+      - name: Build plans (timeline follows the real audio)
         run: npx tsx src/cli.ts plan "${{ inputs.slug }}" --locales "${{ inputs.locales }}"
 
       - name: Render matrix
@@ -48,10 +70,15 @@ jobs:
           name: plans
           path: dist/plan
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: narration
+          path: public/audio
+
   render:
     needs: plan
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
@@ -60,13 +87,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
-      - run: npm install --no-audit --no-fund
+      - run: npm ci
 
       - uses: actions/download-artifact@v4
         with:
           name: plans
           path: dist/plan
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: narration
+          path: public/audio
 
       - name: Ensure headless Chromium
         run: npx remotion browser ensure
@@ -106,7 +139,7 @@ jobs:
           body: |
             Rendered from commit ${{ github.sha }}.
 
-            Upload the long-form master to YouTube, then cut/upload the Shorts and set the
+            Upload the long-form master to YouTube, then upload the Shorts and set the
             related-video link on each one. Files in this release are the render output only.
           files: |
             out/*.mp4
