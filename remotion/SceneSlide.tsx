@@ -56,19 +56,48 @@ export const SceneSlide: React.FC<SlideProps> = ({ scene, variant, showCitations
         </div>
       ) : null}
 
-      <div
-        style={{
-          position: "relative",
-          fontSize: typeScale(scene.text, baseSize),
-          lineHeight: 1.3,
-          fontWeight: 600,
-          opacity,
-          transform: `translateY(${translateY}px)`,
-          maxWidth: isShort ? "100%" : 1400,
-        }}
-      >
-        {scene.text}
-      </div>
+      {scene.points && scene.points.length > 0 ? (
+        <div
+          style={{
+            position: "relative",
+            opacity,
+            transform: `translateY(${translateY}px)`,
+            maxWidth: isShort ? "100%" : 1400,
+          }}
+        >
+          {scene.points.map((point, index) => (
+            <div
+              key={point}
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: isShort ? 28 : 22,
+                marginTop: index === 0 ? 0 : isShort ? 36 : 28,
+                fontSize: typeScale(point, isShort ? 60 : 48),
+                lineHeight: 1.3,
+                fontWeight: 600,
+              }}
+            >
+              <span style={{ color: COLORS.accent, fontSize: "0.7em" }}>—</span>
+              <span>{point}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div
+          style={{
+            position: "relative",
+            fontSize: typeScale(scene.text, baseSize),
+            lineHeight: 1.3,
+            fontWeight: 600,
+            opacity,
+            transform: `translateY(${translateY}px)`,
+            maxWidth: isShort ? "100%" : 1400,
+          }}
+        >
+          {scene.text}
+        </div>
+      )}
 
       {showCitations && scene.citations.length > 0 ? (
         <div

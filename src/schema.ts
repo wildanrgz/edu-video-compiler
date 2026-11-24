@@ -80,6 +80,14 @@ export const sceneSchema = z.object({
   /** No duration here on purpose: the timeline comes from the narration WAV. */
   script: localizedText,
   on_screen: localizedText.optional(),
+  /** Short bullets shown while the scene is spoken. Keeps the frame readable when the
+   *  narration runs for 30+ seconds, instead of printing the whole script on screen. */
+  points: z
+    .object({
+      id: z.array(nonEmpty).min(1).max(4),
+      en: z.array(nonEmpty).min(1).max(4),
+    })
+    .optional(),
   claim_ids: z.array(z.string()).default([]),
   asset_ids: z.array(z.string()).default([]),
 });
@@ -89,7 +97,6 @@ export const shortSchema = z.object({
   id: z.string().regex(/^sh\d+$/, "short id must look like sh1, sh2, ..."),
   /** The first 2 seconds. If this line does not earn the scroll-stop, nothing else matters. */
   hook: localizedText,
-  /** Design intent only; the real length is whatever the narration takes. */
   target_seconds: z.number().min(15).max(60),
   scene_ids: z.array(z.string()).min(1),
   /** Related-video link set in YouTube Studio: turns a Short into a bridge. */
@@ -99,7 +106,7 @@ export const shortSchema = z.object({
 export type Short = z.infer<typeof shortSchema>;
 
 export const ttsVoiceSchema = z.object({
-  /** Piper voice id, e.g. id_ID-news_tts-medium */
+  /** Piper voice id, e.g. id_ID-news_tts */
   voice: z.string().trim().min(3),
   /** 1.0 = the voice's default pace; lower = slower, more deliberate delivery */
   length_scale: z.number().min(0.6).max(1.6).default(0.95),
