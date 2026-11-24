@@ -23,7 +23,9 @@ jobs:
 
       - name: Commit if changed
         run: |
-          if git diff --quiet -- package-lock.json; then
+          # `git status --porcelain` also sees an untracked (brand new) lockfile,
+          # which `git diff` would report as no change.
+          if [ -z "$(git status --porcelain -- package-lock.json)" ]; then
             echo "lockfile already up to date"
             exit 0
           fi
