@@ -1,5 +1,6 @@
 slug: why-you-forget
-status: ready
+# draft: demo/fixture. Narasinya ~2 menit, jadi gate 4 menit hanya memberi warning.
+status: draft
 
 title:
   id: "Kenapa kamu lupa hal yang baru kamu pelajari"
@@ -91,7 +92,6 @@ claims:
 scenes:
   - id: s1
     purpose: hook
-    duration_s: 25
     script:
       id: "Kamu belajar tiga jam semalam. Pagi ini, setengahnya sudah hilang. Dan hampir semua orang menyimpulkan hal yang salah tentang itu."
       en: "You studied for three hours last night. This morning, half of it is gone. And almost everyone draws the wrong conclusion about why."
@@ -103,7 +103,6 @@ scenes:
 
   - id: s2
     purpose: context
-    duration_s: 42
     script:
       id: "Ingatan bukan rekaman. Otak menyimpan jejak, bukan file. Jejak itu melemah kalau tidak pernah dipanggil, dan cara kamu memanggilnya menentukan seberapa kuat ia bertahan."
       en: "Memory is not a recording. The brain stores traces, not files. A trace weakens when it is never retrieved, and how you retrieve it decides how long it survives."
@@ -115,7 +114,6 @@ scenes:
 
   - id: s3
     purpose: evidence
-    duration_s: 70
     script:
       id: "Ebbinghaus pada 1885 mengukur dirinya sendiri dan menemukan penurunan paling tajam terjadi di jam-jam pertama, bukan perlahan sepanjang minggu. Replikasi modern tahun 2015 menemukan pola serupa, hanya lebih lambat dan sangat berbeda antar orang. Artinya: yang kamu alami pagi ini normal, dan bentuk kurvanya bisa diubah."
       en: "In 1885 Ebbinghaus measured himself and found the sharpest drop happens in the first hours, not gradually over a week. A 2015 replication found the same shape, just slower and far more variable between people. So what you felt this morning is normal, and the shape of that curve is changeable."
@@ -127,7 +125,6 @@ scenes:
 
   - id: s4
     purpose: explain
-    duration_s: 88
     script:
       id: "Di tahun 2006, Roediger dan Karpicke membandingkan dua kelompok. Kelompok pertama membaca ulang materi. Kelompok kedua menutup buku dan menuliskan apa yang mereka ingat. Saat diuji seminggu kemudian, kelompok yang menguji diri mengingat jauh lebih banyak. Yang menarik: kelompok pembaca ulang merasa lebih yakin akan hasilnya. Rasa yakin itu bukan retensi."
       en: "In 2006, Roediger and Karpicke compared two groups. One reread the material. The other closed the book and wrote down what they remembered. Tested a week later, the self-testing group remembered substantially more. The interesting part: the rereaders felt more confident about their result. That confidence is not retention."
@@ -139,7 +136,6 @@ scenes:
 
   - id: s5
     purpose: explain
-    duration_s: 72
     script:
       id: "Faktor kedua adalah jeda. Meta-analisis dari 2006 atas ratusan eksperimen menemukan bahwa menyebar sesi belajar dalam beberapa hari mengalahkan menumpuk semuanya dalam satu malam. Bukan karena belajarnya lebih lama, tapi karena setiap kali kamu memanggil kembali setelah agak lupa, jejaknya diperkuat."
       en: "The second factor is the gap. A 2006 meta-analysis across hundreds of experiments found that spreading sessions over several days beats cramming them into one night. Not because you study longer, but because each retrieval after partial forgetting strengthens the trace."
@@ -151,7 +147,6 @@ scenes:
 
   - id: s6
     purpose: counterpoint
-    duration_s: 58
     script:
       id: "Jadi kenapa semua orang masih membaca ulang? Karena menstabilo dan membaca ulang terasa enak. Materinya terasa familiar, dan familiaritas terasa seperti pemahaman. Tapi familiaritas hanya membuktikan kamu pernah melihatnya, bukan bahwa kamu bisa memproduksinya saat diminta."
       en: "So why does everyone still reread? Because highlighting and rereading feel good. The material feels familiar, and familiarity feels like understanding. But familiarity only proves you have seen it, not that you can produce it when asked."
@@ -163,7 +158,6 @@ scenes:
 
   - id: s7
     purpose: takeaway
-    duration_s: 45
     script:
       id: "Protokol yang bisa kamu pakai malam ini: tutup catatan, tulis lima hal yang kamu ingat, cek yang salah, lalu ulangi besok dan tiga hari lagi. Total tambahan waktunya sekitar sepuluh menit. Episode berikutnya membahas cara memilih jeda yang tepat untuk ujian yang sudah ada tanggalnya."
       en: "A protocol you can use tonight: close your notes, write five things you remember, check what you got wrong, then repeat tomorrow and again in three days. The extra time is about ten minutes. The next episode covers how to pick the right gap when your exam already has a date."
