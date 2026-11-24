@@ -14,6 +14,7 @@
     "describe": "tsx src/cli.ts describe",
     "matrix": "tsx src/cli.ts matrix",
     "topic": "tsx src/cli.ts topic",
+    "font": "node scripts/ensure-font.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run validate",
     "studio": "remotion studio remotion/index.ts",
