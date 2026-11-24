@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { readFileSync } from "node:fs";
+import { readAudioManifestSync, type AudioLocale } from "./audio";
 import type { Episode, LoadedEpisode, Locale } from "./schema";
 
 export type Citation = { label: string; url: string };
@@ -12,6 +13,10 @@ export type PlannedScene = {
   text: string;
   on_screen?: string;
   citations: Citation[];
+  /** Narration track, relative to public/ — consumed by staticFile() in Remotion. */
+  audio?: string | null;
+  /** Speech-only length, for reference in the upload checklist. */
+  narration_s?: number;
 };
 
 export type UploadMeta = {
@@ -40,6 +45,7 @@ export type ShortPlan = {
   short_id: string;
   hook: string;
   cta: string | null;
+  target_seconds: number;
   total_duration_s: number;
   scenes: PlannedScene[];
 };
@@ -69,21 +75,41 @@ function citationsFor(episode: Episode, claimIds: string[]): Citation[] {
   });
 }
 
-function planScenes(episode: Episode, locale: Locale, sceneIds: string[]): PlannedScene[] {
+function sceneAudio(audio: AudioLocale | undefined): Map<string, AudioLocale["scenes"][number]> {
+  return new Map((audio?.scenes ?? []).map((scene) => [scene.id, scene]));
+}
+
+/**
+ * A scene's timeline length is the length of its narration. When audio exists it wins
+ * over the authored number, so the picture never drifts away from the voice.
+ */
+function planScenes(episode: Episode, locale: Locale, sceneIds: string[], audio?: AudioLocale): PlannedScene[] {
+  const byId = sceneAudio(audio);
   let cursor = 0;
+
   return sceneIds.flatMap((id) => {
     const scene = episode.scenes.find((candidate) => candidate.id === id);
     if (!scene) return [];
+    const narration = byId.get(scene.id);
+
     const planned: PlannedScene = {
       id: scene.id,
       purpose: scene.purpose,
-      start_s: cursor,
-      duration_s: scene.duration_s,
+      start_s: Math.round(cursor * 100) / 100,
+      duration_s: narration ? narration.duration_s : scene.duration_s,
       text: scene.script[locale],
       citations: citationsFor(episode, scene.claim_ids),
     };
     if (scene.on_screen) planned.on_screen = scene.on_screen[locale];
-    cursor += scene.duration_s;
+    if (narration) {
+      planned.audio = narration.file;
+      planned.narration_s = narration.narration_s;
+    } else {
+      planned.audio = null;
+    }
+
+    planned.start_s = Math.round(cursor * 100) / 100;
+    cursor += planned.duration_s;
     return [planned];
   });
 }
@@ -145,15 +171,19 @@ export function buildDescription(episode: Episode, locale: Locale, chapters: { s
   return body.join("\n");
 }
 
-export function buildLongPlan(episode: LoadedEpisode, locale: Locale): LongPlan {
+export function buildLongPlan(episode: LoadedEpisode, locale: Locale, audio?: AudioLocale): LongPlan {
   const ep = episode.data;
-  const scenes = planScenes(ep, locale, ep.scenes.map((scene) => scene.id));
+  const scenes = planScenes(
+    ep,
+    locale,
+    ep.scenes.map((scene) => scene.id),
+    audio,
+  );
   const total = scenes.reduce((sum, scene) => sum + scene.duration_s, 0);
-  const chapters = ep.scenes.map((scene, index) => {
-    const start = ep.scenes.slice(0, index).reduce((sum, previous) => sum + previous.duration_s, 0);
-    const label = scene.on_screen?.[locale] ?? PURPOSE_LABEL[scene.purpose]?.[locale] ?? scene.id;
-    return { start_s: start, label };
-  });
+  const chapters = scenes.map((scene) => ({
+    start_s: scene.start_s,
+    label: scene.on_screen ?? PURPOSE_LABEL[scene.purpose]?.[locale] ?? scene.id,
+  }));
 
   const meta: UploadMeta = {
     title: ep.title[locale],
@@ -169,33 +199,20 @@ export function buildLongPlan(episode: LoadedEpisode, locale: Locale): LongPlan 
     slug: ep.slug,
     locale,
     title: ep.title[locale],
-    total_duration_s: total,
+    total_duration_s: Math.round(total * 100) / 100,
     scenes,
     meta,
   };
 }
 
 /**
- * A Short is cut from long-form scenes but must hit its own target length, so the
- * scene durations are rescaled proportionally. One script, two shapes.
+ * Shorts reuse the long-form scene narration, so a Short can never drift from the
+ * master. Its length is whatever those scenes take to say out loud.
  */
-function scaleScenes(scenes: PlannedScene[], targetSeconds: number): PlannedScene[] {
-  const weight = scenes.reduce((sum, scene) => sum + scene.duration_s, 0) || 1;
-  let cursor = 0;
-  return scenes.map((scene, index) => {
-    const isLast = index === scenes.length - 1;
-    const raw = isLast ? targetSeconds - cursor : (targetSeconds * scene.duration_s) / weight;
-    const duration = Math.max(3, Math.round(raw));
-    const scaled: PlannedScene = { ...scene, start_s: cursor, duration_s: duration };
-    cursor += duration;
-    return scaled;
-  });
-}
-
-export function buildShortPlans(episode: LoadedEpisode, locale: Locale): ShortPlan[] {
+export function buildShortPlans(episode: LoadedEpisode, locale: Locale, audio?: AudioLocale): ShortPlan[] {
   const ep = episode.data;
   return ep.shorts.map((short) => {
-    const scenes = scaleScenes(planScenes(ep, locale, short.scene_ids), short.target_seconds);
+    const scenes = planScenes(ep, locale, short.scene_ids, audio);
     return {
       kind: "short" as const,
       slug: ep.slug,
@@ -203,11 +220,22 @@ export function buildShortPlans(episode: LoadedEpisode, locale: Locale): ShortPl
       short_id: short.id,
       hook: short.hook[locale],
       cta: short.cta ? short.cta[locale] : null,
-      total_duration_s: short.target_seconds,
+      target_seconds: short.target_seconds,
+      total_duration_s: Math.round(scenes.reduce((sum, scene) => sum + scene.duration_s, 0) * 100) / 100,
       scenes,
     };
   });
 }
+
+/** Scenes the narration step has not covered yet. */
+export function missingNarration(episode: LoadedEpisode, locale: Locale): string[] {
+  const audio = readAudioManifestSync(episode.data.slug)?.locales[locale];
+  const covered = new Set((audio?.scenes ?? []).map((scene) => scene.id));
+  return episode.data.scenes.filter((scene) => !covered.has(scene.id)).map((scene) => scene.id);
+}
+
+export const audioFor = (slug: string, locale: Locale): AudioLocale | undefined =>
+  readAudioManifestSync(slug)?.locales[locale];
 
 export function sha256(content: string): string {
   return crypto.createHash("sha256").update(content).digest("hex");
@@ -216,10 +244,13 @@ export function sha256(content: string): string {
 export type RenderManifest = {
   generated_at: string;
   episode: { slug: string; file: string; sha256: string; git_commit: string | null };
-  outputs: { locale: Locale; kind: string; id: string; sha256: string }[];
+  outputs: { locale: Locale; kind: string; id: string; sha256: string; duration_s: number }[];
 };
 
-export function buildManifest(episode: LoadedEpisode, outputs: { locale: Locale; kind: string; id: string; body: unknown }[]): RenderManifest {
+export function buildManifest(
+  episode: LoadedEpisode,
+  outputs: { locale: Locale; kind: string; id: string; body: unknown; duration_s: number }[],
+): RenderManifest {
   let source = "";
   try {
     source = readFileSync(episode.file, "utf8");
@@ -239,6 +270,7 @@ export function buildManifest(episode: LoadedEpisode, outputs: { locale: Locale;
       kind: output.kind,
       id: output.id,
       sha256: sha256(JSON.stringify(output.body)),
+      duration_s: output.duration_s,
     })),
   };
 }

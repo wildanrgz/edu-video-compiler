@@ -97,6 +97,25 @@ export const shortSchema = z.object({
 });
 export type Short = z.infer<typeof shortSchema>;
 
+export const ttsVoiceSchema = z.object({
+  /** Piper voice id, e.g. id_ID-news_tts-medium */
+  voice: z.string().trim().min(3),
+  /** 1.0 = the voice's default pace; lower = slower, more deliberate delivery */
+  length_scale: z.number().min(0.6).max(1.6).default(0.95),
+  /** Silence appended after each scene's narration, in seconds */
+  tail_s: z.number().min(0).max(3).default(0.5),
+});
+export type TtsVoice = z.infer<typeof ttsVoiceSchema>;
+
+/** Per-locale narration settings. Override in episode.yml when a topic needs a different read. */
+export const ttsSchema = z
+  .object({
+    id: ttsVoiceSchema.optional(),
+    en: ttsVoiceSchema.optional(),
+  })
+  .default({});
+export type TtsConfig = z.infer<typeof ttsSchema>;
+
 export const disclosureSchema = z.object({
   /** Altered or synthetic content, per YouTube's disclosure requirement. */
   aigc: z.boolean(),
@@ -120,6 +139,8 @@ export const episodeSchema = z.object({
   presenter: z.enum(["human", "ai_avatar", "none"]),
   sensitive_topics: z.array(z.enum(SENSITIVE_TOPICS)).default([]),
   disclosure: disclosureSchema,
+  /** Piper voice settings per locale; defaults live in src/tts.ts */
+  tts: ttsSchema,
   assets: z.array(assetSchema).default([]),
   claims: z.array(claimSchema).min(1),
   scenes: z.array(sceneSchema).min(5),
