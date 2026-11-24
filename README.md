@@ -4,7 +4,7 @@ Repo pribadi untuk satu orang: mengubah **satu file episode** menjadi master 16:
 (YouTube long-form) + beberapa Short 9:16, **dengan narasi suara**, dalam **dua bahasa** (id, en).
 
 Repo ini publik, tapi isinya alat dan skrip pribadi. Video hasil render tidak
-disimpan di git — hasilnya masuk GitHub Release / laptop.
+disimpan di git — hasilnya masuk GitHub Release / artefak Actions / laptop.
 
 ## Alur
 
@@ -13,14 +13,16 @@ episodes/<slug>/episode.yml
         |
         +-- validate --> gate compliance (gagal = berhenti di sini)
         +-- tts      --> public/audio/<slug>/<locale>/sN.wav  +  dist/audio/<slug>.json
-        +-- plan     --> dist/plan/*.json   (timeline mengikuti durasi audio asli)
+        +-- plan     --> dist/plan/*.json   (timeline = durasi audio, tanpa angka manual)
         +-- render   --> out/*.mp4          (video + narasi)
 ```
 
-`episode.yml` adalah satu-satunya sumber kebenaran. Satu episode, dua kolom
-bahasa, dua output. **Durasi tiap scene diambil dari audio**, bukan dari angka
-yang kamu tulis: kalau narasi 24,36 detik, slide dapat 24,36 detik. Tidak ada
-audio yang terpotong atau gambar yang menggantung.
+`episode.yml` adalah satu-satunya sumber **isi**. Audio adalah satu-satunya sumber
+**waktu**: skema scene tidak punya `duration_s` sama sekali. Kalau narasi 24,36
+detik, slide dapat 24,36 detik — tidak ada audio terpotong dan tidak ada gambar
+yang menggantung. Karena itu `plan` menolak jalan sebelum audio ada.
+
+Master hasil ukur: id **2:10** (130,41 s di MP4), en **1:42** (102,02 s di MP4).
 
 ## Sekali setup
 
@@ -38,16 +40,17 @@ Voice tidak masuk git (61 MB per model). `voices/` dan `public/audio/` ada di `.
 ```bash
 npm run validate                                          # gate compliance semua episode
 npm run tts -- why-you-forget --locales id,en --piper .venv/bin/piper
-npm run plan -- why-you-forget --locales id,en
+npm run plan -- why-you-forget --locales id,en             # wajib setelah tts
 npm run describe -- why-you-forget --locale en             # deskripsi + chapter + sumber
 npm run topic -- --keywords "memory,spacing,recall"        # cek ide baru sebelum menulis
 npm run studio                                             # pratinjau Remotion
-npm run render:long -- out/test.mp4 --props=dist/plan/why-you-forget.en.long.json
+npm run render:short -- out/test.mp4 --props=dist/plan/why-you-forget.en.short-sh1.json
 ```
 
 Render penuh (8 file: 2 bahasa × master + 3 Short) lewat GitHub Actions:
 **Actions → render → Run workflow**, isi `slug`. Job `plan` yang menyintesis
-narasi, lalu 8 job render paralel memakainya.
+narasi, lalu 8 job render paralel memakainya. `publish_release: false` = hasil
+hanya jadi artefak, tanpa Release.
 
 ## Narasi (Piper)
 
@@ -67,22 +70,23 @@ narasi, lalu 8 job render paralel memakainya.
 
 ## Yang memblokir render
 
-Gate di `src/compliance.ts` sengaja keras, karena ini yang membedakan
-"video edukasi" dari "template AI yang tidak layak monetisasi":
+Gate di `src/compliance.ts` + `src/cli.ts`, sengaja keras, karena ini yang
+membedakan "video edukasi" dari "template AI yang tidak layak monetisasi":
 
-| Rule | Kenapa |
-| --- | --- |
-| `min_original_assets` | minimal 2 aset buatan sendiri per episode |
-| `claim_source` | setiap klaim wajib punya URL sumber nyata |
-| `thesis_duplicate` | kemiripan kata kunci >= 60% dengan episode lama ditolak |
-| `script_duplicate` | skrip identik dengan episode lain ditolak |
-| `sensitive_needs_human` | topik sensitif wajib presenter manusia |
-| `aigc_undisclosed` | suara sintetis wajib `disclosure.aigc: true` |
-| `cml_asset` | lagu TikTok Commercial Music Library tidak boleh masuk MP4 |
-| `duration_min` / `duration_max` | 4–15 menit untuk master |
+| Rule | Di mana | Kenapa |
+| --- | --- | --- |
+| `min_original_assets` | validate | minimal 2 aset buatan sendiri per episode |
+| `claim_source` | validate | setiap klaim wajib punya URL sumber nyata |
+| `thesis_duplicate` | validate | kemiripan kata kunci >= 60% dengan episode lama ditolak |
+| `script_duplicate` | validate | skrip identik dengan episode lain ditolak |
+| `sensitive_needs_human` | validate | topik sensitif wajib presenter manusia |
+| `aigc_undisclosed` | validate | suara sintetis wajib `disclosure.aigc: true` |
+| `cml_asset` | validate | lagu TikTok Commercial Music Library tidak boleh masuk MP4 |
+| `narration` | plan | scene tanpa audio = tidak ada timeline, plan gagal |
+| `duration` | plan | 4–15 menit untuk `status: ready`; `draft` hanya warning |
 
-Warning (tidak memblokir): scene tanpa narasi, Short > 60 detik, hook terlalu
-panjang, tanpa related-video link, tanpa CTA, klaim yang tidak pernah diucapkan.
+Warning (tidak memblokir): Short > 60 detik, hook terlalu panjang, tanpa
+related-video link, tanpa CTA, klaim yang tidak pernah diucapkan.
 
 ## Yang tidak boleh masuk repo
 
