@@ -1,3 +1,5 @@
+import { FONT_FAMILY } from "./fonts";
+
 export const FPS = 30;
 
 export const COLORS = {
@@ -9,7 +11,8 @@ export const COLORS = {
   accentSoft: "#33405F",
 };
 
-export const FONT_STACK = '"DejaVu Sans", "Liberation Sans", system-ui, sans-serif';
+/** The bundled font first: a render host without system fonts would otherwise draw nothing. */
+export const FONT_STACK = `"${FONT_FAMILY}", "DejaVu Sans", "Liberation Sans", system-ui, sans-serif`;
 
 /** Long scenes carry more text than a headline; shrink instead of clipping. */
 export function typeScale(text: string, base: number): number {

@@ -5,6 +5,7 @@ build/
 .venv/
 voices/
 public/audio/
+public/fonts/
 *.mp4
 *.wav
 *.mp3
